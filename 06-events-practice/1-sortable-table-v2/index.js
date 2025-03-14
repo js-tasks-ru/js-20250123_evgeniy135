@@ -1,37 +1,27 @@
 import SortableTableV1 from '../../05-dom-document-loading/2-sortable-table-v1/index.js';
 
 export default class SortableTableV2 extends SortableTableV1 {
-  constructor(
-    headersConfig,
-    {
-      data = [],
-      sorted = {
-        id: 'name',
-        order: 'asc' }
-    } = {},
-    isSortLocally = true
-  ) {
+
+  constructor(headersConfig, {
+    data = [],
+    sorted = {},
+    isSortLocally = true,
+  } = {}) {
     super(headersConfig, data);
 
     this.isSortLocally = isSortLocally;
     this.arrowElement = this.createArrowElement(this.createArrowTemplate());
-
     this.createListeners();
-    this.setDefaultSort(sorted.id, sorted.order);
+    this.sorted = sorted;
+    this.sort(sorted.id, sorted.order);
+
+    const defaultHeader = this.subElements.header.querySelector(`[data-id="${sorted.id}"]`);
+    this.setSortingHeader(defaultHeader, sorted.order);
   }
 
   setSortingHeader(headerElement, sortOrder) {
     headerElement.dataset.order = sortOrder;
     headerElement.append(this.arrowElement);
-  }
-
-  setDefaultSort(sortField, sortOrder) {
-    const defaultHeader = this.subElements.header.querySelector(`[data-id="${sortField}"]`);
-
-    if (defaultHeader) {
-      this.setSortingHeader(defaultHeader, sortOrder);
-      this.sort(sortField, sortOrder);
-    }
   }
 
   createArrowElement(template) {
@@ -48,8 +38,8 @@ export default class SortableTableV2 extends SortableTableV1 {
           </span>`;
   }
 
-  handleHeaderCellClick = (e) => {
-    const cellElement = e.target.closest('.sortable-table__cell');
+  handleHeaderCellClick = (event) => {
+    const cellElement = event.target.closest('.sortable-table__cell');
 
     if (!cellElement) {
       return;
@@ -63,14 +53,19 @@ export default class SortableTableV2 extends SortableTableV1 {
     const sortOrder = cellElement.dataset.order === 'desc' ? 'asc' : 'desc';
 
     this.setSortingHeader(cellElement, sortOrder);
+
     this.sort(sortField, sortOrder);
   }
 
   sort(sortField, sortOrder) {
+
+    this.sorted.id = sortField;
+    this.sorted.order = sortOrder;
+
     if (this.isSortLocally) {
       this.sortOnClient(sortField, sortOrder);
     } else {
-      this.sortOnServer();
+      this.sortOnServer(sortField, sortOrder);
     }
   }
 
@@ -78,11 +73,13 @@ export default class SortableTableV2 extends SortableTableV1 {
     super.sort(sortField, sortOrder);
   }
 
-  sortOnServer() {
+  sortOnServer(field, order) {
 
   }
 
   createListeners() {
+    this.handleHeaderCellClick = this.handleHeaderCellClick.bind(this);
+
     this.subElements.header.addEventListener('pointerdown', this.handleHeaderCellClick);
   }
 

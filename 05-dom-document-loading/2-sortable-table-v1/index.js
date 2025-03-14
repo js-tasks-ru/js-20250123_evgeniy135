@@ -30,6 +30,10 @@ export default class SortableTable {
       return direction * (a[field] - b[field]);
     });
 
+    this.update();
+  }
+
+  update() {
     this.subElements.body.innerHTML = this.createRowsTemplate();
   }
 
@@ -75,6 +79,7 @@ export default class SortableTable {
           <div data-element="body" class="sortable-table__body">
             ${this.createRowsTemplate()}
           </div>
+          <div data-element="loading" class="loading-line sortable-table__loading-line"></div>
         </div>
       </div>
     `;
